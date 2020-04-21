@@ -62,25 +62,25 @@ static void do_tick(
         int width,
         int height
 ) {
-        int x, y, alive;
+        int x, y, pos, alive;
 
         memset(buffer, 0, width * height * sizeof(char));
 
         for (y = 1; y < height - 1; ++y)
                 for (x = 1; x < width - 1; ++x) {
-                        alive = field[idx_at(width, x - 1, y - 1)]
-                                + field[idx_at(width, x, y - 1)]
-                                + field[idx_at(width, x + 1, y - 1)]
-                                + field[idx_at(width, x - 1, y)]
-                                + field[idx_at(width, x + 1, y)]
-                                + field[idx_at(width, x - 1, y + 1)]
-                                + field[idx_at(width, x, y + 1)]
-                                + field[idx_at(width, x + 1, y + 1)];
-
+                        pos = y * width + x;
+                        alive = field[pos - width - 1]
+                                + field[pos - width]
+                                + field[pos - width + 1]
+                                + field[pos - 1]
+                                + field[pos + 1]
+                                + field[pos + width - 1]
+                                + field[pos + width]
+                                + field[pos + width + 1];
                         if (alive == 3)
-                                buffer[idx_at(width, x, y)] = 1;
-                        else if (alive == 2 && field[idx_at(width, x, y)] == 1)
-                                buffer[idx_at(width, x, y)] = 1;
+                                buffer[pos] = 1;
+                        else if (alive == 2 && field[pos] == 1)
+                                buffer[pos] = 1;
                 }
 }
 
@@ -89,14 +89,17 @@ static void draw_field(
         int width,
         int height
 ) {
-        int x, y;
+        int x, y, pos;
 
         glColor3f(1, 0.33f, 0);
         glBegin(GL_POINTS);
+        pos = 0;
         for (y = 0; y < height; ++y)
-                for (x = 0; x < width; ++x)
-                        if (field[y * width + x] == 1)
+                for (x = 0; x < width; ++x) {
+                        if (field[pos] == 1)
                                 glVertex2f(x, y);
+                        ++pos;
+                }
         glEnd();
 }
 
@@ -127,9 +130,9 @@ int WINAPI WinMain (
         if (!glfwInit())
                 return -1;
 
-        width = 640;
-        height = 480;
-        window = glfwCreateWindow(width, height, "Cello", NULL, NULL);
+        width = 1920;
+        height = 1080;
+        window = glfwCreateWindow(width, height, "Cello", glfwGetPrimaryMonitor(), NULL);
         if (!window) {
                 glfwTerminate();
                 return -1;
@@ -155,6 +158,7 @@ int WINAPI WinMain (
         clear_border(field, width, height);
 
         prev = glfwGetTime();
+        int iter = 0;
         while (!glfwWindowShouldClose(window)) {
                 glClear(GL_COLOR_BUFFER_BIT);
 
@@ -169,6 +173,12 @@ int WINAPI WinMain (
 
                 glfwSwapBuffers(window);
                 glfwPollEvents();
+
+                if (++iter >= 100) {
+                        printf("100 iterations in %f\n", glfwGetTime() - prev);
+                        prev = glfwGetTime();
+                        iter = 0;
+                }
         }
 
         glfwDestroyWindow(window);
