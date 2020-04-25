@@ -3,7 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <omp.h>
 #include <GLFW/glfw3.h>
+
+#define TITLE_LEN 255
 
 static int idx_at(
         int width,
@@ -66,6 +69,7 @@ static void do_tick(
 
         memset(buffer, 0, width * height * sizeof(char));
 
+        #pragma omp parallel for
         for (y = 1; y < height - 1; ++y)
                 for (x = 1; x < width - 1; ++x) {
                         pos = y * width + x;
@@ -120,19 +124,20 @@ int WINAPI WinMain (
         PSTR lpCmdLine,
         INT nCmdShow
 ) {
-        srand(time(NULL));
-
-        int width, height;
-        double now, prev;
-        char *field, *buffer, *temp;
+        int width, height, iter;
+        double prev, before_draw, draw_time;
+        char *field, *buffer, *temp, title[TITLE_LEN];
         GLFWwindow *window;
+
+        srand(time(NULL));
+        printf("OpenMP threads count: %d\n", omp_get_max_threads());
 
         if (!glfwInit())
                 return -1;
 
         width = 1920;
         height = 1080;
-        window = glfwCreateWindow(width, height, "Cello", glfwGetPrimaryMonitor(), NULL);
+        window = glfwCreateWindow(width, height, "Cello", NULL, NULL);
         if (!window) {
                 glfwTerminate();
                 return -1;
@@ -158,13 +163,15 @@ int WINAPI WinMain (
         clear_border(field, width, height);
 
         prev = glfwGetTime();
-        int iter = 0;
+        draw_time = 0;
+        iter = 0;
         while (!glfwWindowShouldClose(window)) {
+                before_draw = glfwGetTime();
                 glClear(GL_COLOR_BUFFER_BIT);
-
                 setup_camera(width, height);
-
                 draw_field(field, width, height);
+                draw_time += glfwGetTime() - before_draw;
+
                 do_tick(field, buffer, width, height);
 
                 temp = field;
@@ -175,7 +182,9 @@ int WINAPI WinMain (
                 glfwPollEvents();
 
                 if (++iter >= 100) {
-                        printf("100 iterations in %f\n", glfwGetTime() - prev);
+                        sprintf(title, "Cello iter: 100@%.3f draw: %.3f", glfwGetTime() - prev, draw_time);
+                        glfwSetWindowTitle(window, title);
+                        draw_time = 0;
                         prev = glfwGetTime();
                         iter = 0;
                 }
