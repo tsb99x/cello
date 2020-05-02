@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <excpt.h>
 
 #include <omp.h>
 #include <GLFW/glfw3.h>
@@ -129,6 +130,10 @@ int WINAPI WinMain (
         char *field, *buffer, *temp, title[TITLE_LEN];
         GLFWwindow *window;
 
+        #ifdef WIN32
+        __try {
+        #endif
+
         srand(time(NULL));
         printf("OpenMP threads count: %d\n", omp_get_max_threads());
 
@@ -192,5 +197,13 @@ int WINAPI WinMain (
 
         glfwDestroyWindow(window);
         glfwTerminate();
+
+        #ifdef WIN32
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
+                EPRINTF("Exception occurred, code: %d", GetExceptionCode());
+                return -1;
+        }
+        #endif
+
         return 0;
 }
