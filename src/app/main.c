@@ -1,50 +1,14 @@
+#include <grid.h>
+
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <excpt.h>
 
-#include <omp.h>
 #include <GLFW/glfw3.h>
 
 #define TITLE_LEN 255
-
-static int idx_at(
-        int width,
-        int x,
-        int y
-) {
-        return y * width + x;
-}
-
-static void rand_field(
-        char field[],
-        int width,
-        int height
-) {
-        int x, y;
-
-        for (y = 0; y < height; ++y)
-                for (x = 0; x < width; ++x)
-                        field[idx_at(width, x, y)] = rand() % 2;
-}
-
-static void clear_border(
-        char field[],
-        int width,
-        int height
-) {
-        int i;
-
-        for (i = 0; i < width; ++i) {
-                field[idx_at(width, i, 0)] = 0;
-                field[idx_at(width, i, height - 1)] = 0;
-        }
-        for (i = 0; i < height; ++i) {
-                field[idx_at(width, 0, i)] = 0;
-                field[idx_at(width, width - 1, i)] = 0;
-        }
-}
 
 static void setup_camera(
         int width,
@@ -58,54 +22,6 @@ static void setup_camera(
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-}
-
-static void do_tick(
-        char field[],
-        char buffer[],
-        int width,
-        int height
-) {
-        int x, y, pos, alive;
-
-        memset(buffer, 0, width * height * sizeof(char));
-
-        #pragma omp parallel for
-        for (y = 1; y < height - 1; ++y)
-                for (x = 1; x < width - 1; ++x) {
-                        pos = y * width + x;
-                        alive = field[pos - width - 1]
-                                + field[pos - width]
-                                + field[pos - width + 1]
-                                + field[pos - 1]
-                                + field[pos + 1]
-                                + field[pos + width - 1]
-                                + field[pos + width]
-                                + field[pos + width + 1];
-                        if (alive == 3)
-                                buffer[pos] = 1;
-                        else if (alive == 2 && field[pos] == 1)
-                                buffer[pos] = 1;
-                }
-}
-
-static void draw_field(
-        char field[],
-        int width,
-        int height
-) {
-        int x, y, pos;
-
-        glColor3f(1, 0.33f, 0);
-        glBegin(GL_POINTS);
-        pos = 0;
-        for (y = 0; y < height; ++y)
-                for (x = 0; x < width; ++x) {
-                        if (field[pos] == 1)
-                                glVertex2f(x, y);
-                        ++pos;
-                }
-        glEnd();
 }
 
 static void key_callback(
@@ -135,7 +51,6 @@ int WINAPI WinMain (
         #endif
 
         srand(time(NULL));
-        printf("OpenMP threads count: %d\n", omp_get_max_threads());
 
         if (!glfwInit())
                 return -1;
@@ -200,7 +115,9 @@ int WINAPI WinMain (
 
         #ifdef WIN32
         } __except(EXCEPTION_EXECUTE_HANDLER) {
-                EPRINTF("Exception occurred, code: %d", GetExceptionCode());
+                fprintf(stderr,
+                        "Exception occurred, code: %d\n",
+                        GetExceptionCode());
                 return -1;
         }
         #endif
