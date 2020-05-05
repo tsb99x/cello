@@ -1,26 +1,33 @@
 #pragma once
 
-void rand_field(
-        char field[],
+struct grid {
+        char *field;
+        int width;
+        int height;
+};
+
+struct grid *grid_init(
         int width,
         int height
 );
 
-void clear_border(
-        char field[],
-        int width,
-        int height
+void grid_destroy(
+        struct grid *g
 );
 
-void do_tick(
-        char field[],
-        char buffer[],
-        int width,
-        int height
+void grid_rand(
+        struct grid *g
 );
 
-void draw_field(
-        char field[],
-        int width,
-        int height
+void grid_clear_border(
+        struct grid *g
+);
+
+void grid_do_tick(
+        struct grid *g,
+        struct grid *b
+);
+
+void grid_draw_field(
+        struct grid *g
 );

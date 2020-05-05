@@ -43,7 +43,8 @@ int WINAPI WinMain (
 ) {
         int width, height, iter;
         double prev, before_draw, draw_time;
-        char *field, *buffer, *temp, title[TITLE_LEN];
+        char title[TITLE_LEN];
+        struct grid *field, *buffer, *temp;
         GLFWwindow *window;
 
         #ifdef WIN32
@@ -67,20 +68,20 @@ int WINAPI WinMain (
         glfwMakeContextCurrent(window);
         glfwSwapInterval(0);
 
-        field = malloc(width * height * sizeof(char));
+        field = grid_init(width, height);
         if (!field) {
                 glfwTerminate();
                 return -1;
         }
 
-        buffer = malloc(width * height * sizeof(char));
+        buffer = grid_init(width, height);
         if (!buffer) {
                 glfwTerminate();
                 return -1;
         }
 
-        rand_field(field, width, height);
-        clear_border(field, width, height);
+        grid_rand(field);
+        grid_clear_border(field);
 
         prev = glfwGetTime();
         draw_time = 0;
@@ -89,10 +90,10 @@ int WINAPI WinMain (
                 before_draw = glfwGetTime();
                 glClear(GL_COLOR_BUFFER_BIT);
                 setup_camera(width, height);
-                draw_field(field, width, height);
+                grid_draw_field(field);
                 draw_time += glfwGetTime() - before_draw;
 
-                do_tick(field, buffer, width, height);
+                grid_do_tick(field, buffer);
 
                 temp = field;
                 field = buffer;
@@ -109,6 +110,9 @@ int WINAPI WinMain (
                         iter = 0;
                 }
         }
+
+        grid_destroy(field);
+        grid_destroy(buffer);
 
         glfwDestroyWindow(window);
         glfwTerminate();
