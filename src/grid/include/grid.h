@@ -27,7 +27,3 @@ void grid_do_tick(
         struct grid *g,
         struct grid *b
 );
-
-void grid_draw_field(
-        struct grid *g
-);

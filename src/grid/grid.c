@@ -1,8 +1,5 @@
 #include <grid.h>
 
-#include <omp.h>
-#include <GLFW/glfw3.h>
-
 #include <stdlib.h>
 
 static int idx_at(
@@ -86,21 +83,4 @@ void grid_do_tick(
                         else if (alive == 2 && g->field[pos] == 1)
                                 b->field[pos] = 1;
                 }
-}
-
-void grid_draw_field(
-        struct grid *g
-) {
-        int x, y, pos;
-
-        glColor3f(1, 0.33f, 0);
-        glBegin(GL_POINTS);
-        pos = 0;
-        for (y = 0; y < g->height; ++y)
-                for (x = 0; x < g->width; ++x) {
-                        if (g->field[pos] == 1)
-                                glVertex2f(x, y);
-                        ++pos;
-                }
-        glEnd();
 }

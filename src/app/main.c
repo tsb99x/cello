@@ -1,12 +1,12 @@
 #include <grid.h>
 
+#include <excpt.h>
+#include <GLFW/glfw3.h>
 #include <windows.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <excpt.h>
-
-#include <GLFW/glfw3.h>
 
 #define TITLE_LEN 255
 
@@ -22,6 +22,23 @@ static void setup_camera(
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+}
+
+static void draw_grid(
+        struct grid *g
+) {
+        int x, y, pos;
+
+        glColor3f(1, 0.33f, 0);
+        glBegin(GL_POINTS);
+        pos = 0;
+        for (y = 0; y < g->height; ++y)
+                for (x = 0; x < g->width; ++x) {
+                        if (g->field[pos] == 1)
+                                glVertex2i(x, y);
+                        ++pos;
+                }
+        glEnd();
 }
 
 static void key_callback(
@@ -90,7 +107,7 @@ int WINAPI WinMain (
                 before_draw = glfwGetTime();
                 glClear(GL_COLOR_BUFFER_BIT);
                 setup_camera(width, height);
-                grid_draw_field(field);
+                draw_grid(field);
                 draw_time += glfwGetTime() - before_draw;
 
                 grid_do_tick(field, buffer);
