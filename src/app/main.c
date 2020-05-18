@@ -1,6 +1,5 @@
 #include <grid.h>
 
-#include <excpt.h>
 #include <GLFW/glfw3.h>
 #include <windows.h>
 
@@ -63,10 +62,6 @@ int WINAPI WinMain (
         char title[TITLE_LEN];
         struct grid *field, *buffer, *temp;
         GLFWwindow *window;
-
-        #ifdef WIN32
-        __try {
-        #endif
 
         srand(time(NULL));
 
@@ -133,15 +128,6 @@ int WINAPI WinMain (
 
         glfwDestroyWindow(window);
         glfwTerminate();
-
-        #ifdef WIN32
-        } __except(EXCEPTION_EXECUTE_HANDLER) {
-                fprintf(stderr,
-                        "Exception occurred, code: %d\n",
-                        GetExceptionCode());
-                return -1;
-        }
-        #endif
 
         return 0;
 }
