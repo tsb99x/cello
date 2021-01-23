@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(cello LANGUAGES C)
+project(cello)
 
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(glfw)
 add_subdirectory(src)
